@@ -97,7 +97,7 @@ Users will just instantiate a layer and then treat it as a callable.
   Here's a basic example: a layer with two variables, `w` and `b`,
   that returns `y = w . x + b`.
   
-  Variables set as attributes of a layer are tracked as weights
+  Variables set as attributes of a layer (self.w and self.b) are tracked as weights
   of the layers (in `layer.weights`).
 
 ```python
@@ -119,10 +119,10 @@ Users will just instantiate a layer and then treat it as a callable.
         
   # Instantiates the layer.
   linear_layer = SimpleDense(4)
-
-
+```
 
 Here's a densely-connected layer. It has a state: the variables `w` and `b`.
+It is same as above with build not being used.
 
 
 """
