@@ -61,15 +61,18 @@ Users will just instantiate a layer and then treat it as a callable.
   
   * `__init__()`: Defines custom layer attributes, and creates layer weights
     that do not depend on input shapes, using `add_weight()`, or other state.
+    
   * `build(self, input_shape)`: This method can be used to create weights that
     depend on the shape(s) of the input(s), using `add_weight()`, or other
     state. `__call__()` will automatically build the layer (if it has not been
     built yet) by calling `build()`.
+    
   * `call(self, inputs, *args, **kwargs)`: Called in `__call__` after making
     sure `build()` has been called. `call()` performs the logic of applying the
     layer to the `inputs`. The first invocation may additionally create state
     that could not be conveniently created in `build()`; see its docstring
     for details.
+    
     Two reserved keyword arguments you can optionally use in `call()` are:
       - `training` (boolean, whether the call is in inference mode or training
         mode). See more details in [the layer/model subclassing guide](
@@ -77,6 +80,7 @@ Users will just instantiate a layer and then treat it as a callable.
       - `mask` (boolean tensor encoding masked timesteps in the input, used
         in RNN layers). See more details in [the layer/model subclassing guide](
         https://www.tensorflow.org/guide/keras/custom_layers_and_models#privileged_mask_argument_in_the_call_method)
+    
     A typical signature for this method is `call(self, inputs)`, and user could
     optionally add `training` and `mask` if the layer need them. `*args` and
     `**kwargs` is only useful for future extension when more input parameters
@@ -87,7 +91,40 @@ Users will just instantiate a layer and then treat it as a callable.
     This method is used when saving
     the layer or a model that contains this layer.
 
+
+  Examples:
+  
+  Here's a basic example: a layer with two variables, `w` and `b`,
+  that returns `y = w . x + b`.
+  
+  Variables set as attributes of a layer are tracked as weights
+  of the layers (in `layer.weights`).
+
+```python
+  class SimpleDense(Layer):
+    def __init__(self, units=32):
+        super(SimpleDense, self).__init__()
+        self.units = units
+        
+    def build(self, input_shape):  # Create the state of the layer (weights)
+      w_init = tf.random_normal_initializer()
+      self.w = tf.Variable(initial_value=w_init(shape=(input_shape[-1], self.units), dtype='float32'),
+          trainable=True)
+      b_init = tf.zeros_initializer()
+      self.b = tf.Variable(initial_value=b_init(shape=(self.units,), dtype='float32'),
+          trainable=True)
+          
+    def call(self, inputs):  # Defines the computation from inputs to outputs
+        return tf.matmul(inputs, self.w) + self.b
+        
+  # Instantiates the layer.
+  linear_layer = SimpleDense(4)
+
+
+
 Here's a densely-connected layer. It has a state: the variables `w` and `b`.
+
+
 """
 
 
