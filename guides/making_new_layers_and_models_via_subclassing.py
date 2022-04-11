@@ -7,11 +7,85 @@ import tensorflow as tf
 from tensorflow import keras
 
 """
-## The `Layer` class: the combination of state (weights) and some computation
+The `Layer` class: the combination of state (weights) and some computation
 
 One of the central abstraction in Keras is the `Layer` class. A layer
 encapsulates both a state (the layer's "weights") and a transformation from
 inputs to outputs (a "call", the layer's forward pass).
+
+A layer is a callable object that takes as input one or more tensors and
+  that outputs one or more tensors. It involves *computation*, defined
+  in the `call()` method, and a *state* (weight variables). State can be
+  created in various places, at the convenience of the subclass implementer:
+  * in `__init__()`;
+  * in the optional `build()` method, which is invoked by the first
+    `__call__()` to the layer, and supplies the shape(s) of the input(s),
+    which may not have been known at initialization time;
+  * in the first invocation of `call()`, with some caveats 
+  
+  
+Users will just instantiate a layer and then treat it as a callable.
+
+  Args:
+    trainable: Boolean, whether the layer's variables should be trainable.
+    name: String name of the layer.
+    dtype: The dtype of the layer's computations and weights. Can also be a
+      `tf.keras.mixed_precision.Policy`, which allows the computation and weight
+      dtype to differ. Default of `None` means to use
+      `tf.keras.mixed_precision.global_policy()`, which is a float32 policy
+      unless set to different value.
+    dynamic: Set this to `True` if your layer should only be run eagerly, and
+      should not be used to generate a static computation graph.
+      This would be the case for a Tree-RNN or a recursive network,
+      for example, or generally for any layer that manipulates tensors
+      using Python control flow. If `False`, we assume that the layer can
+      safely be used to generate a static computation graph.
+      
+  Attributes: ( only those which are important) 
+  
+    name: The name of the layer (string).
+    dtype: The dtype of the layer's weights.   
+    trainable_weights: List of variables to be included in backprop.
+    non_trainable_weights: List of variables that should not 
+    be included in backprop.
+    weights: The concatenation of the lists trainable_weights and 
+    non_trainable_weights (in this order).
+    trainable: Whether the layer should be trained (boolean), i.e. whether
+      its potentially-trainable weights should be returned as part of 
+      `layer.trainable_weights`.
+    input_spec: Optional (list of) `InputSpec` object(s) specifying the
+      constraints on inputs that can be accepted by the layer.
+      
+      
+  We recommend that descendants of `Layer` implement the following methods:
+  
+  * `__init__()`: Defines custom layer attributes, and creates layer weights
+    that do not depend on input shapes, using `add_weight()`, or other state.
+  * `build(self, input_shape)`: This method can be used to create weights that
+    depend on the shape(s) of the input(s), using `add_weight()`, or other
+    state. `__call__()` will automatically build the layer (if it has not been
+    built yet) by calling `build()`.
+  * `call(self, inputs, *args, **kwargs)`: Called in `__call__` after making
+    sure `build()` has been called. `call()` performs the logic of applying the
+    layer to the `inputs`. The first invocation may additionally create state
+    that could not be conveniently created in `build()`; see its docstring
+    for details.
+    Two reserved keyword arguments you can optionally use in `call()` are:
+      - `training` (boolean, whether the call is in inference mode or training
+        mode). See more details in [the layer/model subclassing guide](
+        https://www.tensorflow.org/guide/keras/custom_layers_and_models#privileged_training_argument_in_the_call_method)
+      - `mask` (boolean tensor encoding masked timesteps in the input, used
+        in RNN layers). See more details in [the layer/model subclassing guide](
+        https://www.tensorflow.org/guide/keras/custom_layers_and_models#privileged_mask_argument_in_the_call_method)
+    A typical signature for this method is `call(self, inputs)`, and user could
+    optionally add `training` and `mask` if the layer need them. `*args` and
+    `**kwargs` is only useful for future extension when more input parameters
+    are planned to be added.
+  * `get_config(self)`: Returns a dictionary containing the configuration used
+    to initialize this layer. If the keys differ from the arguments
+    in `__init__`, then override `from_config(self)` as well.
+    This method is used when saving
+    the layer or a model that contains this layer.
 
 Here's a densely-connected layer. It has a state: the variables `w` and `b`.
 """
@@ -19,7 +93,7 @@ Here's a densely-connected layer. It has a state: the variables `w` and `b`.
 
 class Linear(keras.layers.Layer):
     def __init__(self, units=32, input_dim=32):
-        super(Linear, self).__init__()
+        super().__init__()
         w_init = tf.random_normal_initializer()
         self.w = tf.Variable(
             initial_value=w_init(shape=(input_dim, units), dtype="float32"),
