@@ -160,13 +160,10 @@ being set as layer attributes:
 
 assert linear_layer.weights == [linear_layer.w, linear_layer.b]
 
-
-
 """
 Note you also have access to a quicker shortcut for adding weight to a layer:
 the `add_weight()` method:
 """
-
 
 class Linear(keras.layers.Layer):
   
@@ -189,18 +186,12 @@ print(y)
 
 """
 ## Layers can have non-trainable weights
-
-Besides trainable weights, you can add non-trainable weights to a layer as
-well. Such weights are meant not to be taken into account during
-backpropagation, when you are training the layer.
-
 Here's how to add and use a non-trainable weight:
 """
 
-
 class ComputeSum(keras.layers.Layer):
     def __init__(self, input_dim):
-        super(ComputeSum, self).__init__()
+        super().__init__()
         self.total = tf.Variable(initial_value=tf.zeros((input_dim,)), trainable=False)
 
     def call(self, inputs):
@@ -225,24 +216,16 @@ print("non-trainable weights:", len(my_sum.non_trainable_weights))
 # It's not included in the trainable weights:
 print("trainable_weights:", my_sum.trainable_weights)
 
+
+
+
 """
+
 ## Best practice: deferring weight creation until the shape of the inputs is known
 
 Our `Linear` layer above took an `input_dim `argument that was used to compute
 the shape of the weights `w` and `b` in `__init__()`:
 """
-
-
-class Linear(keras.layers.Layer):
-    def __init__(self, units=32, input_dim=32):
-        super(Linear, self).__init__()
-        self.w = self.add_weight(
-            shape=(input_dim, units), initializer="random_normal", trainable=True
-        )
-        self.b = self.add_weight(shape=(units,), initializer="zeros", trainable=True)
-
-    def call(self, inputs):
-        return tf.matmul(inputs, self.w) + self.b
 
 
 """
@@ -253,21 +236,21 @@ after instantiating the layer.
 In the Keras API, we recommend creating layer weights in the `build(self,
 inputs_shape)` method of your layer. Like this:
 """
-
-
 class Linear(keras.layers.Layer):
     def __init__(self, units=32):
         super(Linear, self).__init__()
         self.units = units
 
-    def build(self, input_shape):
-        self.w = self.add_weight(
+    # weights being created during the build method    
+    # and not at the time when layer is being initialized.    
+    def build(self, input_shape):        
+        self.w = self.add_weight(        
             shape=(input_shape[-1], self.units),
             initializer="random_normal",
             trainable=True,
         )
         self.b = self.add_weight(
-            shape=(self.units,), initializer="random_normal", trainable=True
+          shape=(self.units,), initializer="random_normal", trainable=True
         )
 
     def call(self, inputs):
@@ -288,8 +271,11 @@ y = linear_layer(x)
 
 """
 Implementing `build()` separately as shown above nicely separates creating weights
-only once from using weights in every call. However, for some advanced custom
-layers, it can become impractical to separate the state creation and computation.
+only once from using weights in every call. 
+
+However, for some advanced custom layers, 
+it can become impractical to separate the state creation and computation. ???? what it means??
+
 Layer implementers are allowed to defer weight creation to the first `__call__()`,
 but need to take care that later calls use the same weights. In addition, since
 `__call__()` is likely to be executed for the first time inside a `tf.function`,
@@ -309,7 +295,7 @@ the first `__call__()` to trigger building their weights.
 
 class MLPBlock(keras.layers.Layer):
     def __init__(self):
-        super(MLPBlock, self).__init__()
+        super().__init__()
         self.linear_1 = Linear(32)
         self.linear_2 = Linear(32)
         self.linear_3 = Linear(1)
@@ -338,7 +324,7 @@ calling `self.add_loss(value)`:
 # A layer that creates an activity regularization loss
 class ActivityRegularizationLayer(keras.layers.Layer):
     def __init__(self, rate=1e-2):
-        super(ActivityRegularizationLayer, self).__init__()
+        super().__init__()
         self.rate = rate
 
     def call(self, inputs):
@@ -356,7 +342,7 @@ created during the last forward pass.
 
 class OuterLayer(keras.layers.Layer):
     def __init__(self):
-        super(OuterLayer, self).__init__()
+        super().__init__()
         self.activity_reg = ActivityRegularizationLayer(1e-2)
 
     def call(self, inputs):
