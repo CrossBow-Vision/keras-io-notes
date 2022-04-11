@@ -129,17 +129,16 @@ It is same as above with build not being used.
 
 
 class Linear(keras.layers.Layer):
-    def __init__(self, units=32, input_dim=32):
+  
+    def __init__(self, units=32, input_dim=32):      
         super().__init__()
+        
         w_init = tf.random_normal_initializer()
-        self.w = tf.Variable(
-            initial_value=w_init(shape=(input_dim, units), dtype="float32"),
-            trainable=True,
-        )
+        self.w = tf.Variable(initial_value=w_init(shape=(input_dim, units), dtype="float32"),
+            trainable=True, )
+        
         b_init = tf.zeros_initializer()
-        self.b = tf.Variable(
-            initial_value=b_init(shape=(units,), dtype="float32"), trainable=True
-        )
+        self.b = tf.Variable(initial_value=b_init(shape=(units,), dtype="float32"), trainable=True)
 
     def call(self, inputs):
         return tf.matmul(inputs, self.w) + self.b
@@ -149,7 +148,6 @@ class Linear(keras.layers.Layer):
 You would use a layer by calling it on some tensor input(s), much like a Python
 function.
 """
-
 x = tf.ones((2, 2))
 linear_layer = Linear(4, 2)
 y = linear_layer(x)
@@ -162,6 +160,8 @@ being set as layer attributes:
 
 assert linear_layer.weights == [linear_layer.w, linear_layer.b]
 
+
+
 """
 Note you also have access to a quicker shortcut for adding weight to a layer:
 the `add_weight()` method:
@@ -169,11 +169,13 @@ the `add_weight()` method:
 
 
 class Linear(keras.layers.Layer):
+  
     def __init__(self, units=32, input_dim=32):
-        super(Linear, self).__init__()
+      
+        super().__init__()        
         self.w = self.add_weight(
-            shape=(input_dim, units), initializer="random_normal", trainable=True
-        )
+            shape=(input_dim, units), initializer="random_normal", trainable=True)
+        
         self.b = self.add_weight(shape=(units,), initializer="zeros", trainable=True)
 
     def call(self, inputs):
