@@ -140,7 +140,7 @@ To start using Keras, simply [install TensorFlow 2](https://www.tensorflow.org/i
 
 Keras/TensorFlow are compatible with:
 
-- Python 3.6–3.9
+- Python 3.7–3.10
 - Ubuntu 16.04 or later
 - Windows 7 or later
 - macOS 10.12.6 (Sierra) or later.
@@ -154,7 +154,6 @@ You can ask questions and join the development discussion:
 
 - In the [TensorFlow forum](https://discuss.tensorflow.org/).
 - On the [Keras Google group](https://groups.google.com/forum/#!forum/keras-users).
-- On the [Keras Slack channel](https://kerasteam.slack.com). Use [this link](https://keras-slack-autojoin.herokuapp.com/) to request an invitation to the channel.
 
 You can also post **bug reports and feature requests** (only) in [GitHub issues](https://github.com/keras-team/keras/issues).
 Make sure to read [our guidelines](https://github.com/keras-team/keras/blob/master/CONTRIBUTING.md) first.
